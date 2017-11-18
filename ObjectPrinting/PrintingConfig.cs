@@ -102,4 +102,17 @@ namespace ObjectPrinting
             return ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig;
         }
     }
+    
+    public static class ObjectExtensions
+    {
+        public static string PrintToString<T>(this T obj)
+        {
+            return ObjectPrinter.For<T>().PrintToString(obj);
+        }
+        
+        public static string PrintToString<T>(this T obj, Func<PrintingConfig<T>, PrintingConfig<T>> printingConfigFunc)
+        {
+            return ObjectPrinter.For<T>().PrintToString(obj);
+        }
+    }
 }
