@@ -8,11 +8,6 @@ using System.Text;
 
 namespace ObjectPrinting
 {
-    public interface IPropertyPrintingConfig<TOwner, TPropType>
-    {
-        PrintingConfig<TOwner> PrintingConfig {get;}
-    }
-
     public class PrintingConfig<TOwner>
     {
         public PrintingConfig<TOwner> ExcludeType<TPropType>()
@@ -30,7 +25,7 @@ namespace ObjectPrinting
             return this;
         }
 
-        public PrintingConfig<TOwner, TPropType> ExcludeProperty<TPropType>(Expression<Func<TOwner, TPropType>> serializeFunc)
+        public PrintingConfig<TOwner> ExcludeProperty<TPropType>(Expression<Func<TOwner, TPropType>> serializeFunc)
         {
             return this;
         }
@@ -70,49 +65,6 @@ namespace ObjectPrinting
                               nestingLevel + 1));
             }
             return sb.ToString();
-        }
-    }
-
-    public class PropertyPrintingConfig<TOwner, TPropType> : IPropertyPrintingConfig<TOwner, TPropType>
-    {
-        private readonly PrintingConfig<TOwner> printingConfig;
-        public PropertyPrintingConfig(PrintingConfig<TOwner> printingConfig)
-        {
-            this.printingConfig = printingConfig;
-        }
-        
-        public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
-        {
-            return printingConfig;
-        }
-
-        PrintingConfig<TOwner> IPropertyPrintingConfig<TOwner, TPropType>
-            .PrintingConfig => printingConfig;
-    }
-
-    public static class PropertyPrintingConfigExtention
-    {
-        public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, int> propertyPrintingConfig, CultureInfo cultureInfo)
-        {
-            return ((IPropertyPrintingConfig<TOwner, int>) propertyPrintingConfig).PrintingConfig;
-        }
-        
-        public static PrintingConfig<TOwner> TrimTo<TOwner>(this PropertyPrintingConfig<TOwner, string> propertyPrintingConfig, int trimLength)
-        {
-            return ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig;
-        }
-    }
-    
-    public static class ObjectExtensions
-    {
-        public static string PrintToString<T>(this T obj)
-        {
-            return ObjectPrinter.For<T>().PrintToString(obj);
-        }
-        
-        public static string PrintToString<T>(this T obj, Func<PrintingConfig<T>, PrintingConfig<T>> printingConfigFunc)
-        {
-            return ObjectPrinter.For<T>().PrintToString(obj);
         }
     }
 }
