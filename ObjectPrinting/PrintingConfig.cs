@@ -30,6 +30,11 @@ namespace ObjectPrinting
             return this;
         }
 
+        public PrintingConfig<TOwner, TPropType> ExcludeProperty<TPropType>(Expression<Func<TOwner, TPropType>> serializeFunc)
+        {
+            return this;
+        }
+        
         public PropertyPrintingConfig<TOwner, TPropType> Printing<TPropType>()
         {
             return new PropertyPrintingConfig<TOwner, TPropType>(this);
@@ -75,7 +80,7 @@ namespace ObjectPrinting
         {
             this.printingConfig = printingConfig;
         }
-
+        
         public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
         {
             return printingConfig;
@@ -90,6 +95,11 @@ namespace ObjectPrinting
         public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, int> propertyPrintingConfig, CultureInfo cultureInfo)
         {
             return ((IPropertyPrintingConfig<TOwner, int>) propertyPrintingConfig).PrintingConfig;
+        }
+        
+        public static PrintingConfig<TOwner> TrimTo<TOwner>(this PropertyPrintingConfig<TOwner, string> propertyPrintingConfig, int trimLength)
+        {
+            return ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig;
         }
     }
 }
