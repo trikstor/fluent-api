@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using FluentAssertions;
 
 namespace ObjectPrinting
 {
@@ -11,7 +12,9 @@ namespace ObjectPrinting
         
         public static PrintingConfig<TOwner> TrimTo<TOwner>(this PropertyPrintingConfig<TOwner, string> propertyPrintingConfig, int trimLength)
         {
-            return ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig;
+            var printingConfig = ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig.TrimLength =
+                trimLength;
+            return printingConfig;
         }
     }
     

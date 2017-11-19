@@ -55,14 +55,12 @@ namespace ObjectPrinting
         public Type ExcludingType = null;
         public Delegate CustomPrinting = null;
         public Type CustomPrintingType = null;
+        public int TrimLength = 0;
         
         private string PrintToString(object obj, int nestingLevel)
         {
             if (obj == null)
                 return "null" + Environment.NewLine;
-
-            if (CustomPrinting != null)
-                return CustomPrint(obj, CustomPrinting);
 
             var finalTypes = new[]
             {
@@ -93,8 +91,7 @@ namespace ObjectPrinting
 
         private string CustomPrint(object obj, PropertyInfo propInfo, Delegate customPrinting)
         {
-            var propData = propInfo.GetValue(obj);
-            return customPrinting.DynamicInvoke(propData).ToString();
+            return customPrinting.DynamicInvoke(propInfo).ToString();
         }
 
         private string GetPropertiesWithoutExcludedProperty(PropertyInfo propertyInfo, PropertyInfo excludingProperty, string identation, int nestingLevel, object obj)

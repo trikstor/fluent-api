@@ -23,7 +23,8 @@ namespace ObjectPrinting.Tests
 			                        "\tId == Guid\n" +
 			                        "\tName == Alex\n" +
 			                        "\tHeight == 0\n";
-			CurrPerson.PrintToString(s => s.ExcludeProperty(p => p.Age)).Should().Be(expected);
+			CurrPerson.PrintToString(s => s.ExcludeProperty(p => p.Age))
+				.Should().Be(expected);
 		}
 		
 		[Test]
@@ -33,7 +34,21 @@ namespace ObjectPrinting.Tests
 			                        "\tName == Alex\n" +
 			                        "\tHeight == 0\n" +
 			                        "\tAge == 19\n";
-			ObjectPrinter.For<Person>().ExcludeType<Guid>().PrintToString(CurrPerson).Should().Be(expected);
+			ObjectPrinter.For<Person>()
+				.ExcludeType<Guid>()
+				.PrintToString(CurrPerson)
+				.Should().Be(expected);
+		}
+
+		[Test]
+		public void AlternativeSerializingForType()
+		{
+			const string expected = "";
+			ObjectPrinter.For<Person>()
+				.Printing<int>()
+				.Using(i => i.ToString())
+				.PrintToString(CurrPerson)
+				.Should().Be(expected);
 		}
 		
 		[Test]

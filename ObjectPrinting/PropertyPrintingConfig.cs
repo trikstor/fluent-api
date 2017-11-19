@@ -14,6 +14,7 @@ namespace ObjectPrinting
         {
             var config = new PrintingConfig<TOwner>();
             config.CustomPrinting = serializeFunc;
+            config.CustomPrintingType = serializeFunc.GetType();
             return config;
         }
 
