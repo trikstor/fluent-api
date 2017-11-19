@@ -12,7 +12,9 @@ namespace ObjectPrinting
         
         public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
         {
-            return printingConfig;
+            var config = new PrintingConfig<TOwner>();
+            config.CustomPrinting = serializeFunc;
+            return config;
         }
 
         PrintingConfig<TOwner> IPropertyPrintingConfig<TOwner, TPropType>

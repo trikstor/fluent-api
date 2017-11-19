@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace ObjectPrinting.Tests
@@ -7,10 +8,37 @@ namespace ObjectPrinting.Tests
 	[TestFixture]
 	public class ObjectPrinterAcceptanceTests
 	{
+		public Person CurrPerson;
+		
+		[SetUp]
+		public void SetUp()
+		{
+			CurrPerson = new Person { Name = "Alex", Age = 19 };
+		}
+
+		[Test]
+		public void CorrectPropertyExcluding()
+		{
+			const string expected = "Person\n" +
+			                        "\tId == Guid\n" +
+			                        "\tName == Alex\n" +
+			                        "\tHeight == 0\n";
+			CurrPerson.PrintToString(s => s.ExcludeProperty(p => p.Age)).Should().Be(expected);
+		}
+		
+		[Test]
+		public void CorrectTypeExcluding()
+		{
+			const string expected = "Person\n" +
+			                        "\tName == Alex\n" +
+			                        "\tHeight == 0\n" +
+			                        "\tAge == 19\n";
+			ObjectPrinter.For<Person>().ExcludeType<Guid>().PrintToString(CurrPerson).Should().Be(expected);
+		}
+		
 		[Test]
 		public void Demo()
 		{
-			var person = new Person { Name = "Alex", Age = 19 };
 
 			var printer = ObjectPrinter.For<Person>()
 				//1. Исключить из сериализации свойства определенного типа
@@ -29,12 +57,12 @@ namespace ObjectPrinting.Tests
 				.TrimTo(3)
 				//6. Исключить из сериализации конкретного свойства
 				.ExcludeProperty(p => p.Age);
-            string s1 = printer.PrintToString(person);
+            string s1 = printer.PrintToString(CurrPerson);
 
 			//7. Синтаксический сахар в виде метода расширения, сериализующего по-умолчанию	
-			string s2 = person.PrintToString();
+			string s2 = CurrPerson.PrintToString();
 			//8. ...с конфигурированием
-			string s3 = person.PrintToString(s => s.ExcludeProperty(p => p.Age));
+			string s3 = CurrPerson.PrintToString(s => s.ExcludeProperty(p => p.Age));
 		}
 	}
 }

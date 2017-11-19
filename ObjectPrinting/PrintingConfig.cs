@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using FluentAssertions;
 
 namespace ObjectPrinting
 {
@@ -13,7 +14,9 @@ namespace ObjectPrinting
     {
         public PrintingConfig<TOwner> ExcludeType<TPropType>()
         {
-            return this;
+            var printingConfig = new PrintingConfig<TOwner>();
+            printingConfig.ExcludingType = typeof(TPropType);
+            return printingConfig;
         }
 
     public string PrintToString(TOwner obj)
@@ -49,11 +52,17 @@ namespace ObjectPrinting
         }
 
         public PropertyInfo ExcludingProperty = null;
+        public Type ExcludingType = null;
+        public Delegate CustomPrinting = null;
+        public Type CustomPrintingType = null;
         
         private string PrintToString(object obj, int nestingLevel)
         {
             if (obj == null)
                 return "null" + Environment.NewLine;
+
+            if (CustomPrinting != null)
+                return CustomPrint(obj, CustomPrinting);
 
             var finalTypes = new[]
             {
@@ -68,12 +77,27 @@ namespace ObjectPrinting
             var type = obj.GetType();
             sb.AppendLine(type.Name);
             foreach (var propertyInfo in type.GetProperties())
-                sb.Append(GetPropertiesWithoutExcluded(propertyInfo, ExcludingProperty, identation, nestingLevel, obj));
-            
+            {
+                if (ExcludingType != propertyInfo.PropertyType)
+                {
+                    if (propertyInfo.PropertyType == CustomPrintingType)
+                        sb.Append(CustomPrint(obj, propertyInfo, CustomPrinting));
+                    else
+                        sb.Append(GetPropertiesWithoutExcludedProperty(propertyInfo, ExcludingProperty, identation,
+                            nestingLevel, obj));
+                }
+            }
+
             return sb.ToString();
         }
 
-        private string GetPropertiesWithoutExcluded(PropertyInfo propertyInfo, PropertyInfo excludingProperty, string identation, int nestingLevel, object obj)
+        private string CustomPrint(object obj, PropertyInfo propInfo, Delegate customPrinting)
+        {
+            var propData = propInfo.GetValue(obj);
+            return customPrinting.DynamicInvoke(propData).ToString();
+        }
+
+        private string GetPropertiesWithoutExcludedProperty(PropertyInfo propertyInfo, PropertyInfo excludingProperty, string identation, int nestingLevel, object obj)
         {
             var sb = new StringBuilder();
             if (excludingProperty != null)
@@ -87,7 +111,7 @@ namespace ObjectPrinting
             }
             else
             {
-                sb.Append(identation + propertyInfo.Name + " = " +
+                sb.Append(identation + propertyInfo.Name + " == " +
                           PrintToString(propertyInfo.GetValue(obj),
                               nestingLevel + 1));
             }
