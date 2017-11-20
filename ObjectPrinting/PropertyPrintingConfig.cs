@@ -16,12 +16,11 @@ namespace ObjectPrinting
         public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
         {
             var config = new PrintingConfig<TOwner>();
-            config.CustomPrinting = serializeFunc;
-
+            
             if (string.IsNullOrEmpty(propertyName))
-                config.CustomPrintingType = typeof(TPropType);
+                config.CustomTypePrinting.Add(typeof(TPropType), serializeFunc);
             else
-                config.CustomPrintingPropertyName = propertyName;
+                config.CustomPropPrinting.Add(propertyName, serializeFunc);
             return config;
         }
 

@@ -88,11 +88,12 @@ namespace ObjectPrinting.Tests
 		[Test]
 		public void CorrectCultureUsing()
 		{
-			const string expected = "Person\n" +
-			                        "\tId == Guid\n" +
-			                        "\tName == Alex\n" +
-			                        "\tHeight == 0\n" +
-			                        "\tAge == 19\n";
+			var culturicalField = 19.ToString(new CultureInfo("ru-RU"));
+			var expected = "Person\n" +
+			               "\tId == Guid\n" +
+			               "\tName == Alex\n" +
+			               "\tHeight == 0\n" +
+			               "\tAge == "+ culturicalField +"\n";
 			ObjectPrinter.For<Person>()
 				.Printing<int>()
 				.Using(new CultureInfo("af-ZA"))
