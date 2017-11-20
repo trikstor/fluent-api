@@ -5,16 +5,23 @@ namespace ObjectPrinting
     public class PropertyPrintingConfig<TOwner, TPropType> : IPropertyPrintingConfig<TOwner, TPropType>
     {
         private readonly PrintingConfig<TOwner> printingConfig;
-        public PropertyPrintingConfig(PrintingConfig<TOwner> printingConfig)
+        private readonly string propertyName;
+        
+        public PropertyPrintingConfig(PrintingConfig<TOwner> printingConfig, string propertyName = null)
         {
             this.printingConfig = printingConfig;
+            this.propertyName = propertyName;
         }
         
         public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
         {
             var config = new PrintingConfig<TOwner>();
             config.CustomPrinting = serializeFunc;
-            config.CustomPrintingType = serializeFunc.GetType();
+
+            if (string.IsNullOrEmpty(propertyName))
+                config.CustomPrintingType = typeof(TPropType);
+            else
+                config.CustomPrintingPropertyName = propertyName;
             return config;
         }
 

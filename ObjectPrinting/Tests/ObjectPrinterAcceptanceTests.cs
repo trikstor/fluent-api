@@ -43,10 +43,59 @@ namespace ObjectPrinting.Tests
 		[Test]
 		public void AlternativeSerializingForType()
 		{
-			const string expected = "";
+			const string expected = "Person\n" +
+			                        "\tId == Guid\n" +
+			                        "\tName == Alex\n" +
+			                        "\tHeight == 0\n" +
+			                        "\tAge == test\n";
 			ObjectPrinter.For<Person>()
 				.Printing<int>()
-				.Using(i => i.ToString())
+				.Using(i => "test")
+				.PrintToString(CurrPerson)
+				.Should().Be(expected);
+		}
+		
+		[Test]
+		public void AlternativeSerializingForProperty()
+		{
+			const string expected = "Person\n" +
+			                        "\tId == Guid\n" +
+			                        "\tName == Alex\n" +
+			                        "\tHeight == 0\n" +
+			                        "\tAge == test\n";
+			ObjectPrinter.For<Person>()
+				.Printing(p => p.Age)
+				.Using(i => "test")
+				.PrintToString(CurrPerson)
+				.Should().Be(expected);
+		}
+		
+		[Test]
+		public void TrimStringProperty()
+		{
+			const string expected = "Person\n" +
+			                        "\tId == Guid\n" +
+			                        "\tName == A\n" +
+			                        "\tHeight == 0\n" +
+			                        "\tAge == 19\n";
+			ObjectPrinter.For<Person>()
+				.Printing(p => p.Name)
+				.TrimTo(3)
+				.PrintToString(CurrPerson)
+				.Should().Be(expected);
+		}
+
+		[Test]
+		public void CorrectCultureUsing()
+		{
+			const string expected = "Person\n" +
+			                        "\tId == Guid\n" +
+			                        "\tName == Alex\n" +
+			                        "\tHeight == 0\n" +
+			                        "\tAge == 19\n";
+			ObjectPrinter.For<Person>()
+				.Printing<int>()
+				.Using(new CultureInfo("af-ZA"))
 				.PrintToString(CurrPerson)
 				.Should().Be(expected);
 		}

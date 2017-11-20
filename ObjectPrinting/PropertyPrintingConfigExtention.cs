@@ -7,13 +7,18 @@ namespace ObjectPrinting
     {
         public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, int> propertyPrintingConfig, CultureInfo cultureInfo)
         {
-            return ((IPropertyPrintingConfig<TOwner, int>) propertyPrintingConfig).PrintingConfig;
+            var printingConfig = ((IPropertyPrintingConfig<TOwner, int>) propertyPrintingConfig).PrintingConfig;
+            printingConfig.CustomCulture = cultureInfo;
+            printingConfig.CustomCultureType = typeof(int);
+            
+            return printingConfig;
         }
         
         public static PrintingConfig<TOwner> TrimTo<TOwner>(this PropertyPrintingConfig<TOwner, string> propertyPrintingConfig, int trimLength)
         {
-            var printingConfig = ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig.TrimLength =
-                trimLength;
+            var printingConfig = ((IPropertyPrintingConfig<TOwner, string>) propertyPrintingConfig).PrintingConfig;
+            printingConfig.TrimLength = trimLength;
+            
             return printingConfig;
         }
     }

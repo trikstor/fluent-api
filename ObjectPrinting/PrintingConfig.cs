@@ -37,7 +37,7 @@ namespace ObjectPrinting
 
             var newPrintingConfig = new PrintingConfig<TOwner>();
             newPrintingConfig.ExcludingProperty = propInfo;
-
+            
             return newPrintingConfig;
         }
         
@@ -48,14 +48,20 @@ namespace ObjectPrinting
 
         public PropertyPrintingConfig<TOwner, TPropType> Printing<TPropType>(Expression<Func<TOwner, TPropType>> selector)
         {
-            return new PropertyPrintingConfig<TOwner, TPropType>(this);
+            var propInfo =
+                ((MemberExpression) selector.Body)
+                .Member as PropertyInfo;
+            return new PropertyPrintingConfig<TOwner, TPropType>(this, propInfo.Name);
         }
 
         public PropertyInfo ExcludingProperty = null;
         public Type ExcludingType = null;
         public Delegate CustomPrinting = null;
         public Type CustomPrintingType = null;
+        public string CustomPrintingPropertyName = null;
         public int TrimLength = 0;
+        public CultureInfo CustomCulture = null;
+        public Type CustomCultureType = null;
         
         private string PrintToString(object obj, int nestingLevel)
         {
@@ -67,8 +73,13 @@ namespace ObjectPrinting
                 typeof(int), typeof(double), typeof(float), typeof(string),
                 typeof(DateTime), typeof(TimeSpan)
             };
+            
             if (finalTypes.Contains(obj.GetType()))
+            {
+                if (obj is string str && TrimLength != null)
+                    return str.Substring(0, str.Length - TrimLength) + Environment.NewLine;
                 return obj + Environment.NewLine;
+            }
 
             var identation = new string('\t', nestingLevel + 1);
             var sb = new StringBuilder();
@@ -76,43 +87,48 @@ namespace ObjectPrinting
             sb.AppendLine(type.Name);
             foreach (var propertyInfo in type.GetProperties())
             {
-                if (ExcludingType != propertyInfo.PropertyType)
+                if (ExcludingType == null || ExcludingType != propertyInfo.PropertyType)
                 {
-                    if (propertyInfo.PropertyType == CustomPrintingType)
-                        sb.Append(CustomPrint(obj, propertyInfo, CustomPrinting));
-                    else
-                        sb.Append(GetPropertiesWithoutExcludedProperty(propertyInfo, ExcludingProperty, identation,
-                            nestingLevel, obj));
+                    if (ExcludingProperty == null || ExcludingProperty.Name != propertyInfo.Name)
+                    {
+                        if (propertyInfo.PropertyType == CustomPrintingType ||
+                            propertyInfo.Name == CustomPrintingPropertyName)
+                        {
+                            sb.Append(CustomPropertyPrint(obj, propertyInfo, CustomPrinting, identation));
+                        }
+                        else if (CustomCultureType == propertyInfo.PropertyType)
+                        {
+                            sb.Append(PropertyPrintWithCulture(obj, propertyInfo, CustomCulture, identation));
+                        }
+                        else
+                        {
+                            sb.Append(PrintProperty(propertyInfo, identation, nestingLevel, obj));
+                        }
+                    }
                 }
             }
 
             return sb.ToString();
         }
 
-        private string CustomPrint(object obj, PropertyInfo propInfo, Delegate customPrinting)
+        private string CustomPropertyPrint(object obj, PropertyInfo propInfo, Delegate customPrinting, string identation)
         {
-            return customPrinting.DynamicInvoke(propInfo).ToString();
+            return identation + propInfo.Name + " == " +
+                   customPrinting.DynamicInvoke(propInfo.GetValue(obj)) + '\n'.ToString();
         }
 
-        private string GetPropertiesWithoutExcludedProperty(PropertyInfo propertyInfo, PropertyInfo excludingProperty, string identation, int nestingLevel, object obj)
+        private string PropertyPrintWithCulture(object obj, PropertyInfo propInfo, CultureInfo culture, string identation)
         {
-            var sb = new StringBuilder();
-            if (excludingProperty != null)
-            {
-                if (excludingProperty.Name != propertyInfo.Name)
-                {
-                    sb.Append(identation + propertyInfo.Name + " == " +
-                              PrintToString(propertyInfo.GetValue(obj),
-                                  nestingLevel + 1));
-                }
-            }
-            else
-            {
-                sb.Append(identation + propertyInfo.Name + " == " +
-                          PrintToString(propertyInfo.GetValue(obj),
-                              nestingLevel + 1));
-            }
-            return sb.ToString();
+            var culturicalProp = ((IFormattable) propInfo.GetValue(obj)).ToString(null, CultureInfo.CurrentCulture);
+            culturicalProp = identation + propInfo.Name + " == " + culturicalProp + '\n'.ToString();
+            return culturicalProp;
+        }
+
+        private string PrintProperty(PropertyInfo propertyInfo, string identation, int nestingLevel, object obj)
+        {
+            return identation + propertyInfo.Name + " == " +
+                PrintToString(propertyInfo.GetValue(obj),
+                    nestingLevel + 1);
         }
     }
 }
