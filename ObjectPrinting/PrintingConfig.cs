@@ -7,16 +7,17 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using FluentAssertions;
+using ObjectPrinting.Tests;
 
 namespace ObjectPrinting
 {
     public class PrintingConfig<TOwner>
     {
-        public List<string> ExcludingPropertyNames;
-        public List<Type> ExcludingTypes;
-        public Dictionary<Type, Delegate> CustomTypePrinting;
-        public Dictionary<string, Delegate> CustomPropPrinting;
-        public Dictionary<Type, CultureInfo> CustomCultures;
+        private List<string> ExcludingPropertyNames;
+        private List<Type> ExcludingTypes;
+        private Dictionary<Type, Delegate> CustomTypePrinting;
+        private Dictionary<string, Delegate> CustomPropPrinting;
+        private Dictionary<Type, CultureInfo> CustomCultures;
         public int TrimLength = 0;
 
         public PrintingConfig()
@@ -27,6 +28,21 @@ namespace ObjectPrinting
             CustomPropPrinting = new Dictionary<string, Delegate>();
             CustomTypePrinting = new Dictionary<Type, Delegate>();
         }
+
+        public void AddCustomTypePrinter(Type type, Delegate func)
+        {
+            CustomTypePrinting.Add(type, func);
+        }
+
+        public void AddCustomPropPrinter(string propName, Delegate func)
+        {
+            CustomPropPrinting.Add(propName, func);
+        }
+        
+        public void AddCustomCultureForType(Type type, CultureInfo culture)
+        {
+            CustomCultures.Add(type, culture);
+        }
         
         public PrintingConfig<TOwner> ExcludeType<TPropType>()
         {
@@ -35,7 +51,7 @@ namespace ObjectPrinting
             return printingConfig;
         }
 
-    public string PrintToString(TOwner obj)
+        public string PrintToString(TOwner obj)
         {
             return PrintToString(obj, 0);
         }

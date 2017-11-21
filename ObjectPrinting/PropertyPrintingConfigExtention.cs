@@ -8,7 +8,7 @@ namespace ObjectPrinting
         public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, int> propertyPrintingConfig, CultureInfo cultureInfo)
         {
             var printingConfig = ((IPropertyPrintingConfig<TOwner, int>) propertyPrintingConfig).PrintingConfig;
-            printingConfig.CustomCultures.Add(typeof(int), cultureInfo);
+            printingConfig.AddCustomCultureForType(typeof(int), cultureInfo);
             
             return printingConfig;
         }
@@ -16,7 +16,7 @@ namespace ObjectPrinting
         public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, double> propertyPrintingConfig, CultureInfo cultureInfo)
         {
             var printingConfig = ((IPropertyPrintingConfig<TOwner, double>) propertyPrintingConfig).PrintingConfig;
-            printingConfig.CustomCultures.Add(typeof(double), cultureInfo);
+            printingConfig.AddCustomCultureForType(typeof(double), cultureInfo);
             
             return printingConfig;
         }

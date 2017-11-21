@@ -18,9 +18,9 @@ namespace ObjectPrinting
             var config = new PrintingConfig<TOwner>();
             
             if (string.IsNullOrEmpty(propertyName))
-                config.CustomTypePrinting.Add(typeof(TPropType), serializeFunc);
+                config.AddCustomTypePrinter(typeof(TPropType), serializeFunc);
             else
-                config.CustomPropPrinting.Add(propertyName, serializeFunc);
+                config.AddCustomPropPrinter(propertyName, serializeFunc);
             return config;
         }
 
