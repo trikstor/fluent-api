@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
 using System.Reflection;
 using System.Text;
-using FluentAssertions;
-using ObjectPrinting.Tests;
 
 namespace ObjectPrinting
 {
@@ -15,33 +12,41 @@ namespace ObjectPrinting
     {
         private List<string> ExcludingPropertyNames;
         private List<Type> ExcludingTypes;
-        private Dictionary<Type, Delegate> CustomTypePrinting;
-        private Dictionary<string, Delegate> CustomPropPrinting;
+        private Dictionary<Type, Delegate> CustomTypePrinters;
+        private Dictionary<string, Delegate> CustomPropPrinters;
         private Dictionary<Type, CultureInfo> CustomCultures;
-        public int TrimLength = 0;
+        private int TrimLength = 0;
 
         public PrintingConfig()
         {
             ExcludingPropertyNames = new List<string>();
             ExcludingTypes = new List<Type>();
             CustomCultures = new Dictionary<Type, CultureInfo>();
-            CustomPropPrinting = new Dictionary<string, Delegate>();
-            CustomTypePrinting = new Dictionary<Type, Delegate>();
+            CustomPropPrinters = new Dictionary<string, Delegate>();
+            CustomTypePrinters = new Dictionary<Type, Delegate>();
         }
 
-        public void AddCustomTypePrinter(Type type, Delegate func)
+        public PrintingConfig<TOwner> AddCustomPrinter<TPropType>(Delegate func)
         {
-            CustomTypePrinting.Add(type, func);
+            CustomTypePrinters.Add(typeof(TPropType), func);
+            return this;
         }
 
-        public void AddCustomPropPrinter(string propName, Delegate func)
+        public void AddCustomPrinter(string propName, Delegate func)
         {
-            CustomPropPrinting.Add(propName, func);
+            CustomPropPrinters.Add(propName, func);
         }
         
-        public void AddCustomCultureForType(Type type, CultureInfo culture)
+        public PrintingConfig<TOwner> AddCustomCultureForType(Type type, CultureInfo culture)
         {
             CustomCultures.Add(type, culture);
+            return this;
+        }
+
+        public PrintingConfig<TOwner> AddTrimLength(int trimLength)
+        {
+            TrimLength = trimLength;
+            return this;
         }
         
         public PrintingConfig<TOwner> ExcludeType<TPropType>()
@@ -88,13 +93,27 @@ namespace ObjectPrinting
         
         private string PrintToString(object obj, int nestingLevel)
         {
+            var printers = new Printers(CustomTypePrinters, CustomPropPrinters, CustomCultures);
+            
             if (obj == null)
-                return "null" + Environment.NewLine;
+                return $"null {Environment.NewLine}";
 
             var finalTypes = new[]
             {
-                typeof(int), typeof(double), typeof(float), typeof(string),
-                typeof(DateTime), typeof(TimeSpan)
+                typeof(int), 
+                typeof(uint),
+                typeof(double), 
+                typeof(float), 
+                typeof(decimal),
+                typeof(short),
+                typeof(ushort),
+                typeof(long),
+                typeof(ulong),
+                typeof(string),
+                typeof(byte),
+                typeof(sbyte),
+                typeof(DateTime), 
+                typeof(TimeSpan)
             };
             
             if (finalTypes.Contains(obj.GetType()))
@@ -112,46 +131,17 @@ namespace ObjectPrinting
             {
                 if (ExcludingTypes.Contains(propertyInfo.PropertyType)) continue;
                 if (ExcludingPropertyNames.Contains(propertyInfo.Name)) continue;
-                
-                sb.Append(PropertyPrinting(obj, propertyInfo, nestingLevel, identation));
+
+                var serializedProp = printers.PrintProperty(obj, propertyInfo, nestingLevel, identation);
+                sb.Append(serializedProp ?? SimplePrintProperty(propertyInfo, identation, nestingLevel, obj));
             }
 
             return sb.ToString();
         }
 
-        private string PropertyPrinting(object obj, PropertyInfo propInfo, int nestingLevel, string identation)
+        private string SimplePrintProperty(PropertyInfo propertyInfo, string identation, int nestingLevel, object obj)
         {
-            if(CustomPropPrinting.ContainsKey(propInfo.Name))
-                return identation + propInfo.Name + " == " +
-                       CustomPropPrinting[propInfo.Name].DynamicInvoke(propInfo.GetValue(obj)) + '\n'.ToString();
-            
-            if(CustomTypePrinting.ContainsKey(propInfo.PropertyType))
-                return identation + propInfo.Name + " == " +
-                       CustomTypePrinting[propInfo.PropertyType].DynamicInvoke(propInfo.GetValue(obj)) + '\n'.ToString();
-
-            if (!CustomCultures.ContainsKey(propInfo.GetType()))
-                return SimplePropertyPrinting(propInfo, identation, nestingLevel, obj);
-            
-            var culturicalProp = ((IFormattable) propInfo.GetValue(obj))
-                .ToString(null, CustomCultures[propInfo.PropertyType]);
-            return identation + propInfo.Name + " == " + culturicalProp + '\n'.ToString();
-        }
-
-        private string PropertyPrintWithCulture(object obj, PropertyInfo propInfo, int nestingLevel, string identation)
-        {
-            if (!CustomCultures.ContainsKey(propInfo.GetType()))
-                return SimplePropertyPrinting(propInfo, identation, nestingLevel, obj);
-            
-            var culturicalProp = ((IFormattable) propInfo.GetValue(obj))
-                .ToString(null, CustomCultures[propInfo.PropertyType]);
-            return identation + propInfo.Name + " == " + culturicalProp + '\n'.ToString();
-        }
-
-        private string SimplePropertyPrinting(PropertyInfo propertyInfo, string identation, int nestingLevel, object obj)
-        {
-            return identation + propertyInfo.Name + " == " +
-                PrintToString(propertyInfo.GetValue(obj),
-                    nestingLevel + 1);
+            return $"{identation}{propertyInfo.Name} == {PrintToString(propertyInfo.GetValue(obj), nestingLevel + 1)}";
         }
     }
 }

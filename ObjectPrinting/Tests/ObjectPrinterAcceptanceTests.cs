@@ -13,7 +13,7 @@ namespace ObjectPrinting.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			CurrPerson = new Person { Name = "Alex", Age = 19 };
+			CurrPerson = new Person { Name = "Alex", Age = 19, Height = 191.5};
 		}
 
 		[Test]
@@ -22,7 +22,7 @@ namespace ObjectPrinting.Tests
 			const string expected = "Person\n" +
 			                        "\tId == Guid\n" +
 			                        "\tName == Alex\n" +
-			                        "\tHeight == 0\n";
+			                        "\tHeight == 191,5\n";
 			CurrPerson.PrintToString(s => s.ExcludeProperty(p => p.Age))
 				.Should().Be(expected);
 		}
@@ -32,7 +32,7 @@ namespace ObjectPrinting.Tests
 		{
 			const string expected = "Person\n" +
 			                        "\tName == Alex\n" +
-			                        "\tHeight == 0\n" +
+			                        "\tHeight == 191,5\n" +
 			                        "\tAge == 19\n";
 			ObjectPrinter.For<Person>()
 				.ExcludeType<Guid>()
@@ -46,7 +46,7 @@ namespace ObjectPrinting.Tests
 			const string expected = "Person\n" +
 			                        "\tId == Guid\n" +
 			                        "\tName == Alex\n" +
-			                        "\tHeight == 0\n" +
+			                        "\tHeight == 191,5\n" +
 			                        "\tAge == test\n";
 			ObjectPrinter.For<Person>()
 				.Printing<int>()
@@ -61,7 +61,7 @@ namespace ObjectPrinting.Tests
 			const string expected = "Person\n" +
 			                        "\tId == Guid\n" +
 			                        "\tName == Alex\n" +
-			                        "\tHeight == 0\n" +
+			                        "\tHeight == 191,5\n" +
 			                        "\tAge == test\n";
 			ObjectPrinter.For<Person>()
 				.Printing(p => p.Age)
@@ -76,7 +76,7 @@ namespace ObjectPrinting.Tests
 			const string expected = "Person\n" +
 			                        "\tId == Guid\n" +
 			                        "\tName == A\n" +
-			                        "\tHeight == 0\n" +
+			                        "\tHeight == 191,5\n" +
 			                        "\tAge == 19\n";
 			ObjectPrinter.For<Person>()
 				.Printing(p => p.Name)
@@ -88,15 +88,16 @@ namespace ObjectPrinting.Tests
 		[Test]
 		public void CorrectCultureUsing()
 		{
-			var culturicalField = 19.ToString(new CultureInfo("ru-RU"));
+			const double height = 191.5;
+			var culturicalHeight = height.ToString(new CultureInfo("ru-RU"));
 			var expected = "Person\n" +
 			               "\tId == Guid\n" +
 			               "\tName == Alex\n" +
-			               "\tHeight == 0\n" +
-			               "\tAge == "+ culturicalField +"\n";
+			               "\tHeight == " + culturicalHeight + "\n" +
+			               "\tAge == 19\n";
 			ObjectPrinter.For<Person>()
 				.Printing<int>()
-				.Using(new CultureInfo("af-ZA"))
+				.Using(new CultureInfo("ru-RU"))
 				.PrintToString(CurrPerson)
 				.Should().Be(expected);
 		}
