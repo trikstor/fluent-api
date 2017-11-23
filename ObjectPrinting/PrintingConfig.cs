@@ -112,6 +112,7 @@ namespace ObjectPrinting
                 typeof(string),
                 typeof(byte),
                 typeof(sbyte),
+                typeof(bool),
                 typeof(DateTime), 
                 typeof(TimeSpan)
             };

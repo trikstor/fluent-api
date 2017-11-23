@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using FluentAssertions;
 
 namespace ObjectPrinting
@@ -31,6 +32,12 @@ namespace ObjectPrinting
         {
             return (propertyPrintingConfig as IPropertyPrintingConfig<TOwner, long>).PrintingConfig
                 .AddCustomCultureForType(typeof(long), cultureInfo);
+        }
+        
+        public static PrintingConfig<TOwner> Using<TOwner>(this PropertyPrintingConfig<TOwner, DateTime> propertyPrintingConfig, CultureInfo cultureInfo)
+        {
+            return (propertyPrintingConfig as IPropertyPrintingConfig<TOwner, DateTime>).PrintingConfig
+                .AddCustomCultureForType(typeof(DateTime), cultureInfo);
         }
         
         public static PrintingConfig<TOwner> TrimTo<TOwner>(this PropertyPrintingConfig<TOwner, string> propertyPrintingConfig, int trimLength)
