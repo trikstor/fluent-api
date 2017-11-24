@@ -14,14 +14,10 @@ namespace ObjectPrinting
         }
         
         public PrintingConfig<TOwner> Using(Func<TPropType, string> serializeFunc)
-        {
-            var config = new PrintingConfig<TOwner>();
-            
+        {            
             if (string.IsNullOrEmpty(propertyName))
-                config.AddCustomPrinter<TPropType>(serializeFunc);
-            else
-                config.AddCustomPrinter(propertyName, serializeFunc);
-            return config;
+                return printingConfig.AddCustomPrinter<TPropType>(serializeFunc);
+            return printingConfig.AddCustomPrinter(propertyName, serializeFunc);
         }
 
         PrintingConfig<TOwner> IPropertyPrintingConfig<TOwner, TPropType>

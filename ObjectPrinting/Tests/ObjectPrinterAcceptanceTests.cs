@@ -79,13 +79,13 @@ namespace ObjectPrinting.Tests
 		{
 			const string expected = "Person\n" +
 			                        "\tId == Guid\n" +
-			                        "\tName == A\n" +
+			                        "\tName == Al\n" +
 			                        "\tHeight == 191,5\n" +
 			                        "\tAge == 19\n" +
 			                        "\tBirthdate == 20.07.2015 18:30:25\n";
 			ObjectPrinter.For<Person>()
 				.Printing(p => p.Name)
-				.TrimTo(3)
+				.TrimTo(2)
 				.PrintToString(CurrPerson)
 				.Should().Be(expected);
 		}
